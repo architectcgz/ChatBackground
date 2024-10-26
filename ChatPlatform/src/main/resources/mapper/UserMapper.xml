@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.chatplatform.mapper.UserMapper">
+    <resultMap id="userResultMap" type="com.example.chatplatform.entity.po.User">
+        <result property="userId" column="user_id"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatar" column="avatar"/>
+        <result property="qrCode" column="qrcode"/>
+        <result property="joinType" column="join_type"/>
+        <result property="gender" column="gender"/>
+        <result property="password" column="password"/>
+        <result property="signature" column="signature"/>
+        <result property="status" column="status"/>
+        <result property="location" column="location"/>
+        <result property="lastOffTime" column="last_off_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="userType" column="user_type"/>
+        <result property="addType" column="add_type"/>
+    </resultMap>
+
+    <resultMap id="friendResultMap" type="com.example.chatplatform.entity.vo.FriendInfoVO">
+        <result property="userId" column="user_id"/>
+        <result property="email" column="email"/>
+        <result property="phone" column="phone"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatar" column="avatar"/>
+        <result property="gender" column="gender"/>
+        <result property="signature" column="signature"/>
+        <result property="location" column="location"/>
+    </resultMap>
+
+    <sql id="selectUserInfo">
+        select
+        user_id, email, phone,nickname, avatar,qrcode, join_type,
+        gender, password, signature, status, last_login_time,
+        location, last_off_time, create_time, update_time,
+        user_type, add_type
+        from user
+    </sql>
+    <sql id="selectUserInfoVO">
+        select
+        user_id, email, phone,nickname, avatar,
+        gender, signature,location
+        from user
+    </sql>
+
+    <insert id="register" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        insert into user
+        (user_id,phone,email,nickname,password,qrcode,user_type,status,
+         add_type,join_type,create_time,update_time)
+        values(
+            #{userId},#{phone},#{email},#{nickname},
+            #{password},#{qrCode},#{userType},#{status},#{addType},
+            #{joinType},#{createTime},#{updateTime}
+        )
+    </insert>
+    <update id="updateByUserId">
+        update user
+        <set>
+            <if test="user.email != null">email = #{user.email},</if>
+            <if test="user.nickname != null">nickname = #{user.nickname},</if>
+            <if test="user.avatar != null">avatar = #{user.avatar},</if>
+            <if test="user.joinType != null">join_type = #{user.joinType},</if>
+            <if test="user.gender != null">gender = #{user.gender},</if>
+            <if test="user.password != null">password = #{user.password},</if>
+            <if test="user.signature != null">signature = #{user.signature},</if>
+            <if test="user.status != null">status = #{user.status},</if>
+            <if test="user.lastLoginTime != null">last_login_time = #{user.lastLoginTime},</if>
+            <if test="user.location != null">location = #{user.location},</if>
+            <if test="user.lastOffTime != null">last_off_time = #{user.lastOffTime},</if>
+            <if test="user.createTime != null">create_time = #{user.createTime},</if>
+            <if test="user.updateTime != null">update_time = #{user.updateTime},</if>
+            <if test="user.userType != null">user_type = #{user.userType},</if>
+            <if test="user.addType != null">add_type = #{user.addType}</if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <select id="findByEmail" resultMap="userResultMap">
+        <include refid="selectUserInfo"/>
+        where email = #{email}
+    </select>
+    <select id="getUserInfoByUid" resultMap="userResultMap">
+        <include refid="selectUserInfo"/>
+        where user_id = #{userId}
+    </select>
+    <select id="findByPhone" resultMap="userResultMap">
+        <include refid="selectUserInfo"/>
+        where phone = #{phone}
+    </select>
+    <select id="searchFriend" resultMap="friendResultMap">
+        select
+        u.user_id,
+        u.email,
+        u.phone,
+        u.nickname,
+        u.avatar,
+        u.gender,
+        u.signature,
+        u.location,
+        u.create_time,
+        u.update_time
+        from
+        user u
+        where
+        u.user_id like CONCAT('%', #{friendId}, '%')
+    </select>
+    <select id="getFriendInfoByUidSet" resultMap="friendResultMap">
+        select
+        u.user_id,
+        u.email,
+        u.phone,
+        u.nickname,
+        u.avatar,
+        u.gender,
+        u.signature,
+        u.location,
+        u.create_time,
+        u.update_time,
+        f.alias
+        from
+        user u
+        left join
+        friend f
+        on
+        u.user_id = f.friend_id and f.user_id = #{userId}
+        where
+        u.user_id in
+        <foreach item="id" collection="uidSet" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+    <select id="getUpdateTime" resultType="java.util.Date">
+        select update_time
+        from user
+        where user_id = #{friendUid}
+    </select>
+
+
+</mapper>

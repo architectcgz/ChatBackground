@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.chatplatform.mapper.GroupMapper">
+    <resultMap id="groupSearch" type="com.example.chatplatform.entity.po.Group">
+        <result property="groupId" column="group_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="leaderId" column="leader_id"/>
+        <result property="joinType" column="join_type"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="createGroup">
+        insert into group
+        (group_id,group_name,leader_id,status,create_time,update_time)
+        values
+        (#{groupId},#{groupName},#{leaderId},#{status},NOW(),NOW())
+    </insert>
+    <insert id="addUserToGroup">
+        insert into group_member
+        (group_id,member_id,join_time,member_type)
+        values
+        (#{groupId},#{memberId},#{joinTime},#{memberType})
+    </insert>
+    <insert id="addGroupRequest">
+        insert into group_request
+        (group_id,user_id,request_time,status)
+        values
+        (#{groupId},#{userId},#{requestTime},#{status})
+    </insert>
+
+    <update id="dismissGroup">
+        update group
+        set status = 1
+        where group_id = #{groupId}
+    </update>
+    <update id="reviewRequest">
+        update group_requests
+        set status = #{status}, handler_id = #{handlerId}
+        where group_id = #{groupId} and user_id = #{userId}
+    </update>
+    <update id="setAdmin">
+        update group_member
+        set member_type = 1
+        where group_id = #{groupId}
+        and member_id = #{userId}
+    </update>
+    <update id="removeAdmin">
+        update group_member
+        set member_type = 0
+        where group_id = #{groupId}
+        and member_id = #{userId}
+    </update>
+    <update id="setGroupPinStatus">
+        update group_member
+        set pin_group = #{pinned}
+        where group_id = #{id}
+    </update>
+
+    <update id="setGroupMuteStatus">
+        update group_member
+        set mute group = #{muted}
+        where group_id = #{id}
+    </update>
+    <update id="unPinGroup">
+        update group_member
+        set pin_group = 0
+        where group_id = #{id}
+    </update>
+    <update id="unMuteGroup">
+        update group_member
+        set mute group = 0
+        where group_id = #{id}
+    </update>
+
+    <select id="getGroupByUid" resultType="com.example.chatplatform.entity.po.Group">
+        select
+        group_id,
+        group_name,
+        leader_id,
+        join_type,
+        status,
+        create_time,
+        update_time
+        from group
+        where group_id = #{groupId}
+    </select>
+    <select id="isUserExist" resultType="java.lang.Integer">
+        select 1
+        from group_member
+        where group_id = #{groupId} and member_id = #{memberId}
+        limit 1
+    </select>
+    <select id="getMemberInfoByUserId" resultType="com.example.chatplatform.entity.po.GroupMember">
+        select group_id,member_id,join_time,member_type
+        from group_member
+        where member_id = #{userId}
+    </select>
+    <select id="getGroupRequestList" resultType="com.example.chatplatform.entity.po.GroupRequest">
+        select group_id,user_id,join_time,member_type
+        from group_request
+        where group_id = #{groupId}
+    </select>
+    <select id="isLeader" resultType="java.lang.Integer">
+        select 1
+        from group_member
+        where
+        group_id = #{groupId}
+        and member_id = #{userId}
+        and member_type = 2
+    </select>
+    <select id="getGroupInfoByUid" resultMap="groupSearch">
+        select
+        group_id,
+        group_name,
+        leader_id,
+        join_type,
+        status,
+        create_time
+        from group
+        where group_id = #{groupId}
+    </select>
+    <select id="getMyGroups" resultType="java.lang.String">
+        select group_id
+        from group_member
+        where member_id = #{userId}
+    </select>
+    <select id="getGroupMemberSet" resultType="java.lang.String">
+        select member_id
+        from group_member
+        where group_id = #{groupId}
+    </select>
+    <select id="groupExistsById" resultType="java.lang.Integer">
+        select 1
+        from group
+        where group_id = #{groupId}
+        limit 1
+    </select>
+    <select id="searchGroupByUid" resultMap="groupSearch">
+        select group_id,group_name,leader_id,join_type,status,create_time,update_time
+        from group
+        where group_id like CONCAT('%',#{groupId},'%')
+    </select>
+
+
+</mapper>

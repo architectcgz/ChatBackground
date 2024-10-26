@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: ChatServer
+  data:
+    redis:
+      host: 121.37.188.103
+      port: 6379
+      password: redis12345678
+
+
+server:
+  port: 8791
+  address: 121.37.188.103
+  servlet:
+    context-path: /server
+websocket:
+  port: 5432

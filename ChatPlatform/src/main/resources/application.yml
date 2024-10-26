@@ -1,0 +1,63 @@
+spring:
+  http:
+    multipart:
+      location: /data/upload_tmp
+  application:
+    name: ChatPlatform
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    #url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    #username: ${DB_USERNAME}
+    #password: ${DB_PWD}
+    url: jdbc:mariadb://121.37.188.103:3306/chat_system
+    username: root
+    password: mysql123456
+
+
+#    hikari:
+#      connection-timeout: 30000
+#      idle-timeout: 600000
+#      max-lifetime: 600000
+#      maximum-pool-size: 20
+#      leak-detection-threshold: 2000
+#      minimum-idle: 10
+#      connection-test-query: SELECT 1
+
+  data:
+    redis:
+      host: 121.37.188.103
+      port: 6379
+      password: redis12345678
+
+  mail:
+    username: arcczf@163.com
+    password: FLMXYKDRLNHKQTHR
+    host: smtp.163.com
+    default-encoding: UTF-8
+  jackson:
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+server:
+  port: 8790
+  servlet:
+    context-path: /api
+  url: localhost:8790/api/file
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
+
+file:
+  upload-dir: D:/Documents/SpringBoot/projects/wechat_imitation_file
+
+websocket:
+  port: 5432
+
+
+nginx:
+  host: 121.37.188.103
+  port: 8888

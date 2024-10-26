@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.chatplatform.mapper.FriendMapper">
+
+
+    <insert id="insertFriend">
+        insert into friend
+        (user_id,friend_id,alias,pinned,muted,status,create_time,update_time)
+        values
+        (#{userUid},#{friendUid},#{alias},0,0,0,NOW(),NOW())
+    </insert>
+    <insert id="insertAcceptedFriend">
+        insert into friend
+        (user_id,friend_id,alias,pinned,muted,status,create_time,update_time)
+        values
+        (#{userUid},#{friendUid},#{alias},0,0,1,NOW(),NOW())
+    </insert>
+    <insert id="addFriendRequest">
+        insert into friend_request
+        (request_user_id,friend_id,request_message,alias,status)
+        values
+        (#{userUid},#{friendUid},#{requestMessage},#{alias},0)
+    </insert>
+    <update id="resolveFriendRequest">
+        update friend_request
+        set status = 1
+        where request_user_id = #{userUid} and friend_id = #{friendUid}
+    </update>
+    <update id="updateAlias">
+        update friend
+        set alias = #{alias}
+        where user_id = #{userUid} and friend_id = #{friendUid}
+    </update>
+    <delete id="setFriendStatus">
+        update friend
+        set status = #{status}
+        where user_id = #{userUid} and friend_id = #{friendUid}
+    </delete>
+    <delete id="delete">
+        delete from friend
+        where user_id = #{userUid}
+        and friend_id = #{friendUid}
+    </delete>
+    <select id="getFriend" resultType="com.example.chatplatform.entity.po.Friend">
+        select
+        user_id,
+        friend_id,
+        alias,
+        status,
+        pinned,
+        muted,
+        create_time,
+        update_time
+        from friend
+        where user_id = #{userUid} and friend_id = #{friendUid}
+    </select>
+    <!-- 这里是找到uid为userUid的 friend的uid
+        所以从friend的视角来找自己的userUid
+     -->
+    <select id="getFriendUidSet" resultType="java.lang.String">
+        select friend_id
+        from friend
+        where user_id = #{userUid} and status = 1
+    </select>
+    <select id="getRequestedFriend" resultType="java.lang.String">
+        select user_id
+        from friend
+        where user_id in 
+        <foreach collection="friendUidList" item="item" index="index" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        and status = 0
+        and friend_id = #{userUid}
+    </select>
+    <select id="isFriend" resultType="java.lang.Integer">
+        select 1
+        from friend
+        where user_id = #{user1}
+        and friend_id = #{user2}
+        and status = 1
+        limit 1
+    </select>
+    <select id="isBlocked" resultType="java.lang.Integer">
+        select 1
+        from friend
+        where user_id = #{user2}
+        and friend_id = #{user1}
+        and status = 3
+        limit 1
+    </select>
+
+    <select id="requestFriendInfoList" resultType="com.example.chatplatform.entity.vo.FriendRequestVO">
+        select
+        u.user_id as friend_uid,
+        u.avatar as friend_avatar,
+        u.nickname as friend_nickname,
+        u.location,
+        f.request_message,
+        f.status,
+        f.create_time,
+        f.update_time
+        from friend_request f
+        left join user u
+        on f.request_user_id = u.user_id
+        where f.friend_id = #{userUid}
+        and f.status = 0
+        and f.create_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)  <!-- 筛选 create_time 在7天以内的记录 -->
+        order by f.create_time
+    </select>
+
+
+    <select id="getRequestFriendInfo" resultType="com.example.chatplatform.entity.vo.FriendRequestVO">
+        select
+        u.user_id as friendUid,
+        u.avatar as friendAvatar,
+        u.nickname as friendNickname,
+        u.gender as friendGender,
+        u.location as friendLocation,
+        f.request_message ,
+        f.status,
+        f.create_time,
+        f.update_time
+        from friend_request f
+        left join user u
+        on f.request_user_id = u.user_id
+        where f.request_user_id = #{requestFriendId} and friend_id = #{userId}
+    </select>
+    <select id="requestExists" resultType="java.lang.Integer">
+        select 1
+        from friend_request
+        where
+        request_user_id = #{userUid} and friend_id = #{friendUid}
+        limit 1
+    </select>
+    <select id="getFriendRequest" resultType="com.example.chatplatform.entity.po.FriendRequest">
+        select
+        request_user_id,
+        friend_id,
+        request_message,
+        alias,
+        status,
+        create_time,
+        update_time
+        from friend_request
+        where
+        request_user_id = #{requestUserId}
+        and friend_id = #{friendId}
+    </select>
+    <select id="getUpdateTime" resultType="java.util.Date">
+        select update_time
+        from friend
+        where user_id = #{userId} and friend_id = #{friendUid}
+    </select>
+    <select id="getFriendInfo" resultType="com.example.chatplatform.entity.vo.FriendInfoVO">
+        select
+        u.user_id,
+        u.phone,
+        u.email,
+        u.avatar,
+        f.alias,
+        f.pinned,
+        f.muted,
+        u.nickname,
+        u.location,
+        u.gender,
+        u.signature,
+        u.create_time,
+        u.update_time
+        from friend f
+        left join user u
+        on u.user_id = f.friend_id
+        where f.user_id = #{userId} and f.friend_id = #{friendUid}
+    </select>
+
+
+</mapper>
