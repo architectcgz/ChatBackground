@@ -1,7 +1,7 @@
 package com.example.chatplatform.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.constants.RedisKeys;
 import com.example.chatplatform.entity.constants.SystemConstants;
 import com.example.chatplatform.entity.enums.ResponseEnum;
@@ -10,12 +10,9 @@ import com.example.chatplatform.util.RedisUtils;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author archi
@@ -43,7 +40,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         try {
             javaMailSender.send(simpleMailMessage);
         }catch (Exception e){
-            throw new CustomException(ResponseEnum.CAPTCHA_SEND_ERROR.getCode(),ResponseEnum.CAPTCHA_SEND_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CAPTCHA_SEND_ERROR.getCode(),ResponseEnum.CAPTCHA_SEND_ERROR.getMessage());
         }
         //验证码保存到redis
         RedisUtils.set(RedisKeys.EMAIL_CAPTCHA+receiverEmail,captchaCode,SystemConstants.REDIS_CAPTCHA_EXPIRATION);
@@ -52,7 +49,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void phoneCaptcha(String phone) {
         //可以使用阿里的sms短信服务等
-        throw new CustomException(ResponseEnum.RESOURCE_NOT_FOUND_ERROR.getCode(),ResponseEnum.RESOURCE_NOT_FOUND_ERROR.getMessage());
+        throw new CustomRuntimeException(ResponseEnum.RESOURCE_NOT_FOUND_ERROR.getCode(),ResponseEnum.RESOURCE_NOT_FOUND_ERROR.getMessage());
     }
 
 }

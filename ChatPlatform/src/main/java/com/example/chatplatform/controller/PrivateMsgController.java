@@ -39,6 +39,5 @@ public class PrivateMsgController {
             count = 10L;
         }
         return new ResponseEntity<>(privateMsgService.getUnreadList(friendId,count)).ok();
-
     }
 }

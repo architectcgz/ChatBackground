@@ -1,14 +1,11 @@
 package com.example.chatplatform.security.filters;
 
 import com.example.chatcommon.utils.JwtUtils;
-import com.example.chatplatform.entity.CustomException;
-import com.example.chatplatform.entity.enums.ResponseEnum;
 import com.example.chatplatform.security.CustomUserDetails;
 import com.example.chatplatform.security.CustomUserDetailsService;
 import com.example.chatplatform.entity.constants.RedisKeys;
 import com.example.chatplatform.entity.po.User;
 import com.example.chatplatform.util.RedisUtils;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,9 +44,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         String accessJwt = authHeader.substring(7);
         String username = JwtUtils.getUserIdFromToken(accessJwt);;
-        Integer platform = Integer.valueOf(JwtUtils.getPlatformFromToken(accessJwt));
+        String platformStr = JwtUtils.getPlatformFromToken(accessJwt);
+        Integer platform = platformStr==null?null:Integer.parseInt(platformStr);
         //用户不为空且SecurityContextHolder中没有authentication对象的时候
-        if(!ObjectUtils.isEmpty(username) &&
+        if(!ObjectUtils.isEmpty(username)&& !ObjectUtils.isEmpty(platform) &&
                 SecurityContextHolder.getContext().getAuthentication()==null){
             String redisAccessToken = RedisUtils.get(String.join(":",RedisKeys.USER_ACCESS_TOKEN,platform.toString(),username));
             boolean accessTokenValid = false;
@@ -58,8 +56,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
             //如果redis中存有accessToken,那么accessToken未过期,可以访问
             //如果accessToken没有过期，但是redis中没有，说明其他处的登录挤掉了本次登录
-            log.info("Redis中有AccessToken信息: "+accessTokenValid);
-            if(JwtUtils.validateToken(accessJwt)&&accessTokenValid){
+            log.info("AccessToken是否与Redis中的相同: "+accessTokenValid);
+            boolean jwtValid = JwtUtils.isTokenValid(accessJwt);
+            log.info("jwtValid: "+jwtValid);
+            if(jwtValid&&accessTokenValid){
                 log.info("token未过期且Redis中有AccessToken信息");
                 CustomUserDetails userDetails = (CustomUserDetails) userDetailService.loadUserByUsername(username);
                 //获取用户使用的平台

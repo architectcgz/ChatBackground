@@ -2,6 +2,7 @@ package com.example.chatcommon.po;
 
 import lombok.Data;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -10,7 +11,8 @@ import java.util.Date;
  */
 @Data
 public class Message implements Serializable {
-    private static final Long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     private Long id;
     private String senderId;
     private String receiverId;

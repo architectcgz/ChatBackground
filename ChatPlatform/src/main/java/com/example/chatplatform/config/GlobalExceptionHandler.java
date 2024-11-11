@@ -1,10 +1,11 @@
 package com.example.chatplatform.config;
 
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.enums.ResponseEnum;
 import com.example.chatplatform.entity.response.ResponseEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -55,9 +56,14 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return new ResponseEntity<>().error(ResponseEnum.PARAM_NOT_ENOUGH_ERROR.getCode(),ResponseEnum.PARAM_NOT_ENOUGH_ERROR.getMessage());
     }
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity handleBadCredentialsException(BadCredentialsException e){
+        log.info(e.getMessage());
+        return new ResponseEntity<>().error(HttpStatus.UNAUTHORIZED.value(),e.getMessage());
+    }
 
-    @ExceptionHandler(CustomException.class)
-    public ResponseEntity customException(CustomException e){
+    @ExceptionHandler(CustomRuntimeException.class)
+    public ResponseEntity customException(CustomRuntimeException e){
         log.info(e.getCode()+e.getMessage());
         return new ResponseEntity<>().error(e.getCode(),e.getMessage());
     }

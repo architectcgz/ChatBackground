@@ -35,6 +35,11 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.31.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
             <version>3.0.3</version>
@@ -136,19 +141,27 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.example</groupId>-->
+<!--            <artifactId>ChatCommon</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+        <!-- 打包使用 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>ChatCommon</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/ChatCommon-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
         <!-- FastDFSClient -->
         <dependency>
             <groupId>org.csource</groupId>
             <artifactId>fastdfs-client-java</artifactId>
-            <version>1.32</version>
+            <version>1.27</version>
             <scope>system</scope>
-            <systemPath>${pom.basedir}/lib/fastdfs-client-java-1.32-SNAPSHOT.jar</systemPath>
+            <systemPath>${pom.basedir}/lib/fastdfs-client-java-1.27-SNAPSHOT.jar</systemPath>
         </dependency>
         <!-- zxing QRCode -->
         <dependency>
@@ -169,8 +182,39 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
             </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <includeSystemScope>true</includeSystemScope>-->
+<!--                    <compilerArgument>-Xlint:unchecked</compilerArgument>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
         </plugins>
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-dependency-plugin</artifactId>-->
+<!--                <version>3.1.0</version>-->
+<!--&lt;!&ndash;                <executions>&ndash;&gt;-->
+<!--&lt;!&ndash;                    &lt;!&ndash; 导出所有的jar包 &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                    <id>pra1</id>&ndash;&gt;-->
+<!--&lt;!&ndash;                    &lt;!&ndash; 打包阶段执行必要操作 &ndash;&gt;&ndash;&gt;-->
+<!--&lt;!&ndash;                    <goals>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <goal>copy-dependencies</goal>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </goals>&ndash;&gt;-->
+<!--&lt;!&ndash;                    <configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <outputDirectory>${project.build.directory}/lib</outputDirectory>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <scriptVersion>false</scriptVersion>&ndash;&gt;-->
+<!--&lt;!&ndash;                    </configuration>&ndash;&gt;-->
+<!--&lt;!&ndash;                </executions>&ndash;&gt;-->
+<!--            </plugin>-->
+<!--        </plugins>-->
     </build>
+
 
 </project>

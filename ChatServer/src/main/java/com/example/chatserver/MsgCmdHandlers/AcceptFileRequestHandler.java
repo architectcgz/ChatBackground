@@ -18,6 +18,7 @@ import java.util.Set;
 @Component
 @Slf4j
 public class AcceptFileRequestHandler implements CommandHandler{
+    public AcceptFileRequestHandler() {}
     @Override
     public void handle(ChannelHandlerContext ctx, SendInfo msg) {
         try {

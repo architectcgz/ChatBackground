@@ -68,17 +68,44 @@
             <artifactId>jackson-core</artifactId>
         </dependency>
 
+        <!-- json web token -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.12.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.12.5</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson</artifactId>
             <version>3.31.0</version>
         </dependency>
-
+        <!-- 打包使用 -->
         <dependency>
             <groupId>com.example</groupId>
             <artifactId>ChatCommon</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${pom.basedir}/lib/ChatCommon-0.0.1-SNAPSHOT.jar</systemPath>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.example</groupId>-->
+<!--            <artifactId>ChatCommon</artifactId>-->
+<!--            <version>0.0.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -87,12 +114,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
+                    <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
         </plugins>

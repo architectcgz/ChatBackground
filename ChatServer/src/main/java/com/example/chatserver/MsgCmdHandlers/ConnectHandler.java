@@ -10,7 +10,6 @@ import com.example.chatserver.UserChannelCtxMap;
 import com.example.chatserver.constants.ChannelAttrKeys;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 import jakarta.annotation.Resource;
@@ -41,11 +40,8 @@ public class ConnectHandler implements CommandHandler{
         }
 
         String accessToken = connectInfo.getAccessToken();
-        Integer platform;
-        try {
-            platform = Integer.valueOf(JwtUtils.getPlatformFromToken(accessToken));
-        }catch (ExpiredJwtException e){
-            log.info(e.getMessage());
+        String platformStr = JwtUtils.getPlatformFromToken(accessToken);
+        if(platformStr == null){
             SendInfo sendInfo = new SendInfo();
             sendInfo.setCmd(NettyCmdType.TOKEN_EXPIRED.getCode());
             sendInfo.setData("token 已过期");
@@ -53,7 +49,7 @@ public class ConnectHandler implements CommandHandler{
             ctx.channel().close();
             return;
         }
-
+        Integer platform = Integer.valueOf(platformStr);
         if (!validateToken(platform,accessToken)) {
             SendInfo sendInfo = new SendInfo();
             sendInfo.setCmd(NettyCmdType.TOKEN_EXPIRED.getCode());
@@ -99,7 +95,7 @@ public class ConnectHandler implements CommandHandler{
 
 
     private boolean validateToken(Integer platform,String token){
-        if(!JwtUtils.validateToken(token)){
+        if(!JwtUtils.isTokenValid(token)){
             return false;
         }
         //如果accessToken没有过期，但是redis中没有，说明其他处的登录挤掉了本次登录

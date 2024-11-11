@@ -8,7 +8,7 @@ import com.example.chatcommon.models.GroupMessage;
 import com.example.chatcommon.models.SendInfo;
 import com.example.chatcommon.models.UserInfo;
 import com.example.chatcommon.po.Message;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.constants.RedisKeys;
 import com.example.chatplatform.entity.constants.SystemConstants;
 import com.example.chatplatform.entity.dto.MessageDTO;
@@ -41,7 +41,7 @@ public class GroupMsgServiceImpl implements GroupMsgService {
     public Long sendMessage(MessageDTO message) {
         MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByType(message.getMessageType());
         if(messageTypeEnum==null){
-            throw new CustomException(ResponseEnum.MESSAGE_TYPE_ERROR.getCode(),ResponseEnum.MESSAGE_TYPE_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.MESSAGE_TYPE_ERROR.getCode(),ResponseEnum.MESSAGE_TYPE_ERROR.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userId = user.getUserId();
@@ -54,7 +54,7 @@ public class GroupMsgServiceImpl implements GroupMsgService {
             RedisUtils.storeSet(key,userGroupSet, SystemConstants.REDIS_THREE_DAYS_EXPIRATION);
         }
         if(!userGroupSet.contains(groupId)){
-            throw new CustomException(ResponseEnum.CANNOT_SEND_TO_GROUP_NOT_MEMBER.getCode(),ResponseEnum.CANNOT_SEND_TO_GROUP_NOT_MEMBER.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_SEND_TO_GROUP_NOT_MEMBER.getCode(),ResponseEnum.CANNOT_SEND_TO_GROUP_NOT_MEMBER.getMessage());
         }
         //拿到群成员set
         Set<String> memberSet = RedisUtils.getZSet(RedisKeys.USER_GROUPS+groupId);

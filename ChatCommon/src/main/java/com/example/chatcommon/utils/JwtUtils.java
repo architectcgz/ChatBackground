@@ -1,12 +1,10 @@
 package com.example.chatcommon.utils;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,8 +12,16 @@ import java.util.Map;
 
 @Slf4j
 public final class JwtUtils {
-    private static final SecretKey secret = Keys.hmacShaKeyFor((System.getenv("JWT_KEY")).getBytes());
+    private static final SecretKey secret = Keys.hmacShaKeyFor(System.getenv("JWT_KEY").getBytes());
 
+//    static {
+//        String jwtKey = System.getenv("JWT_KEY");
+//        if (jwtKey == null || jwtKey.isEmpty()) {
+//            throw new IllegalArgumentException("JWT_KEY environment variable is not set or is empty.");
+//        }
+//        log.info("从环境变量中加载出jwtKey: {}", jwtKey);
+//        secret = Keys.hmacShaKeyFor(jwtKey.getBytes());
+//    }
     /**
      * 生成失效时间，以秒为单位
      *
@@ -27,7 +33,7 @@ public final class JwtUtils {
         return new Date(System.currentTimeMillis() + millis);
     }
 
-    public static boolean validateToken(String token){
+    public static boolean isTokenValid(String token){
         return !isTokenExpired(token);
     }
 
@@ -54,7 +60,7 @@ public final class JwtUtils {
     public static String getUserTypeFromToken(String token){
         Claims payload = getPayload(token);
         if(payload!=null){
-            return getPayload(token).get("userType",String.class);
+            return payload.get("userType",String.class);
         }
         return null;
     }
@@ -62,13 +68,14 @@ public final class JwtUtils {
     /**
      * 从token中获取用户所在平台
      * @param token
-     * @return
+     * @return 用户所在平台
      */
     public static String getPlatformFromToken(String token){
         Claims payload = getPayload(token);
         if(payload!=null){
             return payload.get("platform",String.class);
         }
+        log.info("不能从token的payload中获取到platform的信息");
         return null;
     }
     /**
@@ -99,7 +106,7 @@ public final class JwtUtils {
                     .getPayload();
         }catch (ExpiredJwtException e){
             log.info("token"+ token+"已过期");
-            throw e;
+            return null;
         }
     }
 
@@ -108,10 +115,14 @@ public final class JwtUtils {
      * @param token 需要被验证的token
      * @return true/false
      */
-    private static boolean isTokenExpired(String token)
+    public static boolean isTokenExpired(String token)
     {
         //判断预设时间是否在当前时间之前，如果在当前时间之前，就表示过期了，会返回true
-        return getExpiredDate(token).before(new Date());
+        Date expiredDate = getExpiredDate(token);
+        if(expiredDate==null){
+            return true;
+        }
+        return expiredDate.before(new Date());
     }
 
     /**
@@ -121,7 +132,11 @@ public final class JwtUtils {
      */
     private static Date getExpiredDate(String token)
     {
-        return getPayload(token).getExpiration();
+        Claims payload = getPayload(token);
+        if(payload!=null){
+            return payload.getExpiration();
+        }
+        return null;
     }
 
     /**

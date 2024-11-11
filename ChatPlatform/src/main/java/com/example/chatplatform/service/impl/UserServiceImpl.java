@@ -3,7 +3,7 @@ package com.example.chatplatform.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import com.example.chatcommon.utils.JwtUtils;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.constants.RedisKeys;
 import com.example.chatplatform.entity.constants.SystemConstants;
 import com.example.chatplatform.entity.dto.UserInfoDTO;
@@ -41,7 +41,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -84,7 +83,7 @@ public class UserServiceImpl implements UserService {
                 String captchaRedis = RedisUtils.get(captchaKey);
                 //大写验证码输入小写同样认为是正确的
                 if (null == captcha || !captcha.equalsIgnoreCase(captchaRedis)) {
-                    throw new CustomException(ResponseEnum.CAPTCHA_VERIFY_ERROR.getCode(), ResponseEnum.CAPTCHA_VERIFY_ERROR.getMessage());
+                    throw new CustomRuntimeException(ResponseEnum.CAPTCHA_VERIFY_ERROR.getCode(), ResponseEnum.CAPTCHA_VERIFY_ERROR.getMessage());
                 }
                 //删除验证码,防止多次注册
                 RedisUtils.del(captchaKey);
@@ -122,7 +121,7 @@ public class UserServiceImpl implements UserService {
                 byte[] qrCode = QRCodeUtils.generateQRCodeByte(userId,avatar,300,300);
                 String result = fastDFSClient.uploadByteArray(qrCode,user.getUserId()+"_qrcode.png");
                 if(result==null){
-                    throw new CustomException(ResponseEnum.QRCODE_UPLOAD_ERROR.getCode(),ResponseEnum.QRCODE_UPLOAD_ERROR.getMessage());
+                    throw new CustomRuntimeException(ResponseEnum.QRCODE_UPLOAD_ERROR.getCode(),ResponseEnum.QRCODE_UPLOAD_ERROR.getMessage());
                 }
                 user.setQrCode(result);
                 //保存到数据库和redis中,redis保存3天
@@ -135,7 +134,7 @@ public class UserServiceImpl implements UserService {
             }
         }else{
             //已经注册过了，那么提示已经注册过
-            throw new CustomException(ResponseEnum.ALREADY_REGISTERED.getCode(),ResponseEnum.ALREADY_REGISTERED.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.ALREADY_REGISTERED.getCode(),ResponseEnum.ALREADY_REGISTERED.getMessage());
         }
     }
 
@@ -159,13 +158,13 @@ public class UserServiceImpl implements UserService {
                 byte[] newQRCode = QRCodeUtils.generateQRCodeByte(user.getUserId(),avatar,300,300);
                 String result = fastDFSClient.uploadByteArray(newQRCode,user.getUserId()+"_qrcode.png");
                 if(result==null){
-                    throw new CustomException(ResponseEnum.QRCODE_UPLOAD_ERROR.getCode(),ResponseEnum.QRCODE_UPLOAD_ERROR.getMessage());
+                    throw new CustomRuntimeException(ResponseEnum.QRCODE_UPLOAD_ERROR.getCode(),ResponseEnum.QRCODE_UPLOAD_ERROR.getMessage());
                 }
                 userInRedis.setQrCode(result);
             }catch (IOException e){
-                throw new CustomException(ResponseEnum.FETCH_USER_AVATAR_ERROR.getCode(),ResponseEnum.FETCH_USER_AVATAR_ERROR.getMessage());
+                throw new CustomRuntimeException(ResponseEnum.FETCH_USER_AVATAR_ERROR.getCode(),ResponseEnum.FETCH_USER_AVATAR_ERROR.getMessage());
             } catch (WriterException e) {
-                throw new CustomException(ResponseEnum.QRCODE_GENERATE_ERROR.getCode(),ResponseEnum.CAPTCHA_GENERATE_ERROR.getMessage());
+                throw new CustomRuntimeException(ResponseEnum.QRCODE_GENERATE_ERROR.getCode(),ResponseEnum.CAPTCHA_GENERATE_ERROR.getMessage());
             }
         }
         if (userInfoDTO.getNickname() != null && !ObjectUtils.nullSafeEquals(userInfoDTO.getNickname(), userInRedis.getNickname())) {
@@ -259,7 +258,7 @@ public class UserServiceImpl implements UserService {
             log.info("通过email登录");
             key = ((EmailLoginDTO) loginDTO).getEmail();
         }else{
-            throw new CustomException(ResponseEnum.NO_SUCH_LOGIN_METHOD.getCode(),ResponseEnum.NO_SUCH_LOGIN_METHOD.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.NO_SUCH_LOGIN_METHOD.getCode(),ResponseEnum.NO_SUCH_LOGIN_METHOD.getMessage());
         }
         //校验用户密码是否正确,这里使用SpringSecurity的AuthManager来进行校验
         Authentication authRequest = UsernamePasswordAuthenticationToken.unauthenticated(key,loginDTO.getPassword());
@@ -315,17 +314,17 @@ public class UserServiceImpl implements UserService {
             String userStrInRedis = RedisUtils.get(RedisKeys.USER_INFO_ID +userId);
             user = JsonUtils.jsonStrToJavaObj(userStrInRedis,User.class);
         }catch (Exception e){
-            throw new CustomException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
         }
         if(null==user){
             log.info("这里出现了问题，user为null");
-            throw new CustomException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
         }
         // Redis存储的RefreshToken与用户提供的RefreshToken不同,说明身份不同
         if(!refreshToken.equals(user.getRefreshToken())){
             log.info("这里出现了问题,refreshToken与Redis中保存的refreshToken不同");
             log.info(refreshToken+","+user.getRefreshToken());
-            throw new CustomException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage()+",token已过期");
+            throw new CustomRuntimeException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage()+",token已过期");
         }
         //身份正确
         //生成新的accessToken和refreshToken 并保存

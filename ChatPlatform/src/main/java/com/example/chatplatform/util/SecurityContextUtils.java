@@ -1,7 +1,7 @@
 package com.example.chatplatform.util;
 
 import com.example.chatplatform.security.CustomUserDetails;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.enums.ResponseEnum;
 import com.example.chatplatform.entity.po.User;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class SecurityContextUtils {
         User user = getUser();
         if(null==user){
             log.info("这里出现了问题，user为null");
-            throw new CustomException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.USER_AUTH_ERROR.getCode(),ResponseEnum.USER_AUTH_ERROR.getMessage());
         }
         return user;
     }

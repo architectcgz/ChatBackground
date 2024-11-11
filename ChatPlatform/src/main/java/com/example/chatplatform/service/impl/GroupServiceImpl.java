@@ -10,7 +10,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.enums.*;
 import com.example.chatplatform.entity.po.Group;
 import com.example.chatplatform.entity.po.GroupMember;
@@ -58,11 +58,11 @@ public class GroupServiceImpl implements GroupService {
         //先检查群是否存在
         Group group = groupMapper.getGroupByUid(groupUid);
         if(group==null){
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(),ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(),ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         //检查用户是否为群主，否则不能解散群聊
         if(!userUid.equals(group.getLeaderId())){
-            throw new CustomException(ResponseEnum.CANNOT_DISMISS_GROUP.getCode(), ResponseEnum.CANNOT_DISMISS_GROUP.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_DISMISS_GROUP.getCode(), ResponseEnum.CANNOT_DISMISS_GROUP.getMessage());
         }
         groupMapper.dismissGroup(groupUid);
     }
@@ -75,11 +75,11 @@ public class GroupServiceImpl implements GroupService {
         Integer isUserExist = groupMapper.isUserExist(userUid,groupUid);
         //已经进去无法重复加群
         if(isUserExist!=null){
-            throw new CustomException(ResponseEnum.ALREADY_IN_GROUP.getCode(),ResponseEnum.ALREADY_IN_GROUP.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.ALREADY_IN_GROUP.getCode(),ResponseEnum.ALREADY_IN_GROUP.getMessage());
         }
         Group group = groupMapper.getGroupByUid(groupUid);
         if(group==null){//群不存在,不允许加群
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         //如果user是群主，直接加进群
         if(userUid.equals(group.getLeaderId())){
@@ -99,14 +99,14 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public List<GroupRequest> getRequestList(String groupUid, Integer pageNum, Integer pageSize) {
         if(!isGroupExist(groupUid)){//检查群是否存在
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userUid = user.getUserId();
         //检查请求用户是否为群主或者管理员 只有这两种身份能够查看请求列表
         GroupMember groupMember = groupMapper.getMemberInfoByUserId(userUid);
         if(!isAdminOrLeader(groupMember)){
-            throw new CustomException(ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getCode(),ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getCode(),ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getMessage());
         }
         PageHelper.startPage(pageNum,pageSize);
         Page<GroupRequest> groupRequestList = (Page<GroupRequest>) groupMapper.getGroupRequestList(groupUid);
@@ -116,19 +116,19 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void reviewJoinRequest(String groupUid, String requestUserUid, String operation) {
         if(!isGroupExist(groupUid)){//检查群是否存在
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         //如果操作不是Approved或 Rejected中的一种，那么操作非法
         if(!(operation.equals(GroupRequestStatusEnum.APPROVED.getStatus())||
                 operation.equals(GroupRequestStatusEnum.REJECTED.getStatus()))){
-            throw new CustomException(ResponseEnum.OPERATION_NOT_VALID.getCode(),ResponseEnum.OPERATION_NOT_VALID.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.OPERATION_NOT_VALID.getCode(),ResponseEnum.OPERATION_NOT_VALID.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userUid = user.getUserId();
         //检查请求用户是否为群主或者管理员 只有这两种身份能够查看请求列表
         GroupMember groupMember = groupMapper.getMemberInfoByUserId(userUid);
         if(!isAdminOrLeader(groupMember)){
-            throw new CustomException(ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getCode(),ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getCode(),ResponseEnum.CANNOT_GET_GROUP_REQUEST_LIST.getMessage());
         }
         //将请求状态设置成新的状态
         if(operation.equals(GroupRequestStatusEnum.APPROVED.getStatus())){
@@ -141,7 +141,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void addAdminToGroup(String groupUid, String userToSetId) {
         if(!isGroupExist(groupUid)){//检查群是否存在
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userUid = user.getUserId();
@@ -149,12 +149,12 @@ public class GroupServiceImpl implements GroupService {
         Integer isLeader = groupMapper.isLeader(groupUid,userUid);
         //不是群主,无权添加管理员
         if(isLeader==null){
-            throw new CustomException(ResponseEnum.CANNOT_ADD_ADMIN.getCode(),ResponseEnum.CANNOT_ADD_ADMIN.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_ADD_ADMIN.getCode(),ResponseEnum.CANNOT_ADD_ADMIN.getMessage());
         }
         //检查要设置成管理员的用户是否在群聊中
         Integer isUserExist = groupMapper.isUserExist(groupUid,userToSetId);
         if(isUserExist==null){
-            throw new CustomException(ResponseEnum.USER_NOT_IN_GROUP.getCode(),ResponseEnum.USER_NOT_IN_GROUP.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.USER_NOT_IN_GROUP.getCode(),ResponseEnum.USER_NOT_IN_GROUP.getMessage());
         }
         groupMapper.setAdmin(groupUid,userToSetId);
     }
@@ -162,7 +162,7 @@ public class GroupServiceImpl implements GroupService {
     @Override
     public void removeAdminFromGroup(String groupUid, String userToRemoveId) {
         if(!isGroupExist(groupUid)){//检查群是否存在
-            throw new CustomException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.GROUP_NOT_EXISTS.getCode(), ResponseEnum.GROUP_NOT_EXISTS.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userUid = user.getUserId();
@@ -170,12 +170,12 @@ public class GroupServiceImpl implements GroupService {
         Integer isLeader = groupMapper.isLeader(groupUid,userUid);
         //不是群主,无权删除管理员
         if(isLeader==null){
-            throw new CustomException(ResponseEnum.CANNOT_DELETE_ADMIN.getCode(),ResponseEnum.CANNOT_DELETE_ADMIN.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_DELETE_ADMIN.getCode(),ResponseEnum.CANNOT_DELETE_ADMIN.getMessage());
         }
         //检查要设置成管理员的用户是否在群聊中
         Integer isUserExist = groupMapper.isUserExist(groupUid,userToRemoveId);
         if(isUserExist==null){
-            throw new CustomException(ResponseEnum.USER_NOT_IN_GROUP.getCode(),ResponseEnum.USER_NOT_IN_GROUP.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.USER_NOT_IN_GROUP.getCode(),ResponseEnum.USER_NOT_IN_GROUP.getMessage());
         }
         groupMapper.removeAdmin(groupUid,userToRemoveId);
     }

@@ -5,7 +5,7 @@ import com.example.chatcommon.enums.FriendRequestStatusEnum;
 import com.example.chatcommon.enums.NettyCmdType;
 import com.example.chatcommon.models.FriendRequestMessage;
 import com.example.chatcommon.models.SendInfo;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.constants.RedisKeys;
 import com.example.chatplatform.entity.constants.SystemConstants;
 import com.example.chatplatform.entity.dto.AliasUpdateDTO;
@@ -66,7 +66,7 @@ public class FriendServiceImpl implements FriendService {
             FriendRequest friendRequest = friendMapper.getFriendRequest(userUid,friendUid);
             log.info(String.valueOf("好友请求是否为空: "+ friendRequest==null));
             if(friendRequest!=null&&!friendRequestExpired(friendRequest)){
-                throw new CustomException(ResponseEnum.HAS_REQUESTED.getCode(),ResponseEnum.HAS_REQUESTED.getMessage());
+                throw new CustomRuntimeException(ResponseEnum.HAS_REQUESTED.getCode(),ResponseEnum.HAS_REQUESTED.getMessage());
             }
             friendMapper.addFriendRequest(userUid,friendUid,friendRequestDTO.getAlias(),friendRequestDTO.getRequestMessage());
             sendFriendRequestMsg(friendRequestDTO, user, userUid, friendUid);
@@ -79,7 +79,7 @@ public class FriendServiceImpl implements FriendService {
         //查看好友状态，是否被对方拉黑且删除，如果被对方拉黑且删除，不能添加好友
         if(FriendStatusEnum.BLOCKED_AND_UNFRIENDED.getCode().equals(friendAngleStatus)){
             log.info("被对方拉黑且删除，不能添加好友");
-            throw new CustomException(ResponseEnum.CANNOT_ADD_FRIEND.getCode(), ResponseEnum.CANNOT_ADD_FRIEND.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_ADD_FRIEND.getCode(), ResponseEnum.CANNOT_ADD_FRIEND.getMessage());
         }
         //如果把好友拉黑且删除了，用户可以主动添加对方好友，好友状态调整为Accepted 正常
         if(FriendStatusEnum.BLOCKED_AND_UNFRIENDED.getCode().equals(userAngleStatus)){
@@ -141,7 +141,7 @@ public class FriendServiceImpl implements FriendService {
         //userAngle为null 说明user并没有添加friend为好友 不能进行拉黑
         if(userAngle==null){
             log.info("user没有添加对方为好友，不能进行拉黑操作");
-            throw new CustomException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
         }
 
         Integer userAngleStatus = userAngle.getStatus();
@@ -172,7 +172,7 @@ public class FriendServiceImpl implements FriendService {
         //如果user没有添加对面为好友,那么不能进行取消拉黑操作
         if(userAngle==null){
             log.info("user没有添加对方为好友，不能进行取消拉黑操作");
-            throw new CustomException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
         }
         Integer userAngleStatus = userAngle.getStatus();
         //如果已经是拉黑且删除，设置成删除状态
@@ -195,7 +195,7 @@ public class FriendServiceImpl implements FriendService {
         //如果user没有添加对面为好友,那么不能进行删除好友操作
         if(userAngle==null){
             log.info("user没有添加对方为好友，不能进行删除好友操作");
-            throw new CustomException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_DO_NO_FRIEND.getCode(),ResponseEnum.CANNOT_DO_NO_FRIEND.getMessage());
         }
         Integer userAngleStatus = userAngle.getStatus();
         //如果是拉黑状态,那么将状态设置为拉黑且删除
@@ -225,10 +225,10 @@ public class FriendServiceImpl implements FriendService {
         FriendRequest friendRequest = friendMapper.getFriendRequest(friendUid,userUid);
         if(friendRequest==null){
             log.info("未接收到好友请求,无法添加对方为好友");
-            throw new CustomException(ResponseEnum.NO_FRIEND_REQUEST.getCode(),ResponseEnum.NO_FRIEND_REQUEST.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.NO_FRIEND_REQUEST.getCode(),ResponseEnum.NO_FRIEND_REQUEST.getMessage());
         }
         if(friendRequestExpired(friendRequest)){
-            throw new CustomException(ResponseEnum.FRIEND_REQUEST_EXPIRED.getCode(),ResponseEnum.FRIEND_REQUEST_EXPIRED.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.FRIEND_REQUEST_EXPIRED.getCode(),ResponseEnum.FRIEND_REQUEST_EXPIRED.getMessage());
         }
 
         //将request的status设置为已处理

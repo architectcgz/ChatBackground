@@ -8,7 +8,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Properties;
-
 @Component
 public class FastDFSClient {
     private final TrackerClient trackerClient;
@@ -19,6 +18,7 @@ public class FastDFSClient {
     private String host;
     @Value("${nginx.port}")
     private String port;
+
     FastDFSClient() throws MyException, IOException {
         Properties properties = new Properties();
         properties.put(ClientGlobal.PROP_KEY_TRACKER_SERVERS, "121.37.188.103:22122");

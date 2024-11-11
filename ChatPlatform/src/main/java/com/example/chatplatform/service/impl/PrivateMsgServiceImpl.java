@@ -10,7 +10,7 @@ import com.example.chatcommon.models.SendInfo;
 import com.example.chatcommon.models.UnreadPrivateMsg;
 import com.example.chatcommon.models.UserInfo;
 import com.example.chatcommon.po.Message;
-import com.example.chatplatform.entity.CustomException;
+import com.example.chatplatform.entity.CustomRuntimeException;
 import com.example.chatplatform.entity.dto.MessageDTO;
 import com.example.chatplatform.entity.enums.MessageStatusEnum;
 import com.example.chatplatform.entity.enums.MessageTypeEnum;
@@ -52,7 +52,7 @@ public class PrivateMsgServiceImpl implements PrivateMsgService {
     public MessageSendResultVO sendMessage(MessageDTO msg) {
         MessageTypeEnum messageTypeEnum = MessageTypeEnum.getByType(msg.getMessageType());
         if(messageTypeEnum==null){
-            throw new CustomException(ResponseEnum.MESSAGE_TYPE_ERROR.getCode(),ResponseEnum.MESSAGE_TYPE_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.MESSAGE_TYPE_ERROR.getCode(),ResponseEnum.MESSAGE_TYPE_ERROR.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         String userId = user.getUserId();
@@ -63,7 +63,7 @@ public class PrivateMsgServiceImpl implements PrivateMsgService {
         //如果被对方拉黑，不能向对方发消息
         boolean isBlocked = friendService.isBlocked(userId,receiveUserId);
         if(!isFriend||isBlocked){
-            throw new CustomException(ResponseEnum.CANNOT_SEND_MSG.getCode(), ResponseEnum.CANNOT_SEND_MSG.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.CANNOT_SEND_MSG.getCode(), ResponseEnum.CANNOT_SEND_MSG.getMessage());
         }
         //保存信息
         Message message = BeanUtil.copyProperties(msg, Message.class);
@@ -96,7 +96,7 @@ public class PrivateMsgServiceImpl implements PrivateMsgService {
             log.info("发送消息失败");
             e.printStackTrace();
             //TODO 发送消息失败的处理
-            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "服务器内部错误,消息发送失败");
+            throw new CustomRuntimeException(HttpStatus.INTERNAL_SERVER_ERROR.value(), "服务器内部错误,消息发送失败");
         }
         //消息转发成功后,保存到数据库,并且拿到这条信息的id
         messageMapper.saveMessage(message);
@@ -108,11 +108,11 @@ public class PrivateMsgServiceImpl implements PrivateMsgService {
     public void recallMessage(Long id) {
         Message message = messageMapper.getMsgById(id);
         if(message==null){
-            throw new CustomException(ResponseEnum.MSG_NOT_EXIST_ERROR.getCode(), ResponseEnum.MSG_NOT_EXIST_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.MSG_NOT_EXIST_ERROR.getCode(), ResponseEnum.MSG_NOT_EXIST_ERROR.getMessage());
         }
         User user = SecurityContextUtils.getUserNotNull();
         if(!user.getUserId().equals(message.getSenderId())){
-            throw new CustomException(ResponseEnum.MSG_SENDER_ERROR.getCode(), ResponseEnum.MSG_SENDER_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.MSG_SENDER_ERROR.getCode(), ResponseEnum.MSG_SENDER_ERROR.getMessage());
         }
         message.setStatus(MessageStatusEnum.RECALL.getCode());
         messageMapper.updateById(id,message);
@@ -172,7 +172,7 @@ public class PrivateMsgServiceImpl implements PrivateMsgService {
             }
         }catch (Exception e){
             log.info(e.getMessage());
-            throw new CustomException(ResponseEnum.INTERNAL_ERROR.getCode(),ResponseEnum.INTERNAL_ERROR.getMessage());
+            throw new CustomRuntimeException(ResponseEnum.INTERNAL_ERROR.getCode(),ResponseEnum.INTERNAL_ERROR.getMessage());
         }
         return messageList;
     }

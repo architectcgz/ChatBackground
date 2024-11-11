@@ -12,5 +12,4 @@ public class FileStorageException extends RuntimeException{
         this.code = code;
         this.message = message;
     }
-
 }
